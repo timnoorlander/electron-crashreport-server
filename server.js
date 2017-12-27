@@ -1,12 +1,10 @@
 const express = require('express'),
 multer = require('multer'),
-// bodyParser = require('body-parser'),
 path = require('path'),
 fs = require('fs'),
 http = require('http'),
 Raven = require('raven'),
-miniDumpsPath = path.join(__dirname, 'app-crashes'),
-minidump = require('minidump');
+miniDumpsPath = path.join(__dirname, 'app-crashes');
 
 const app = express(),
     server = http.createServer(app);
@@ -22,37 +20,21 @@ const upload = multer({
 function handleStackTrace(error, report) {
     if (error){
         console.log(error);
-        // Raven.captureException(error);
     } else {
         console.log(report);
     }
 }
 
 app.post('/desktop/crash-report', upload, function (req, res) {
-    // minidump.walkStack(req.file.path, __dirname + '/electron.breakpad.syms', handleStackTrace);
-
     req.body.filename = req.file.filename;
     const crashLog = JSON.stringify(req.body, undefined, 2);
 
     fs.writeFile(req.file.path + '.json', crashLog, function (err) {
         if (err) return console.error('Error saving crash report: ' + err.message);
-        // console.log('Saved crash report:\n\t' + crashLog);
-        // console.log(req.file.path + '.json');
     });
-    //TODO: minidump meesturen
-    // Raven.context({
-    //     extra: {file: req.file}
-    // });
 
-    // var error = new Error('Orbit Desktop crash on version ' + req.body.packageVersion);
     var error = new Error();
     error.message ='Orbit Desktop crash on version ' + req.body.packageVersion;
-    // error.stacktrace = fs.readFileSync(req.file.path);
-    // error.fileName = req.file.path + '.json';
-    // const error = {
-    //     message: 'Orbit Desktop crash on version ' + crashLog.appVersion,
-    //     fileName: req.file.path + '.json'
-    // };
 
     console.log(error);
 
